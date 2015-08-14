@@ -1,6 +1,6 @@
 # Windows
 
-You'll gonna need [**RGBDS*](https://github.com/bentley/rgbds/releases/) and [**dd**](http://www.chrysocome.net/dd) to compile the GBS.
+You'll gonna need [**RGBDS**](https://github.com/bentley/rgbds/releases/) and [**dd**](http://www.chrysocome.net/dd) to compile the GBS.
 
 Open the command prompt, go to the directory where you cloned/downloaded this repository and type in:
 

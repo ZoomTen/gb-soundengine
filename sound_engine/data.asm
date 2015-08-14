@@ -18,7 +18,7 @@ Sound1:
 	dw Sound1_Ch2
 	
 Sound2:
-	db 3		; 4 channels
+	db 3		; 3 channels
 	dw Sound2_Ch1
 	dw Sound2_Ch2
 	dw Sound2_Ch3

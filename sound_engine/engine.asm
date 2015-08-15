@@ -1,5 +1,5 @@
 ; ZoomTen's GameBoy sound driver
-; version 1.0
+; version 1.1
 
 UpdateMusic:			; this is the main sound driver
 				; updates channel data every frame
@@ -36,7 +36,7 @@ UpdateMusic:			; this is the main sound driver
 	
 NotesCommonPitches:		; note pitches
 				; actually copied over from Antonio's GBT player
-	dw    $ffff	  ; rs  00
+	dw	$ffff	  ; unused
 	dw   44,  156,  262,  363,  457,  547,  631,  710,  786,  854,  923,  986 ; 01-0c
 	dw 1046, 1102, 1155, 1205, 1253, 1297, 1339, 1379, 1417, 1452, 1486, 1517 ; 0d-18
 	dw 1546, 1575, 1602, 1627, 1650, 1673, 1694, 1714, 1732, 1750, 1767, 1783 ; 19-24
@@ -52,7 +52,7 @@ Waveforms:			; wave channel waveforms
 	dw .w4	;4
 	dw .w5	;5
 	dw .w6	;6
-	dw .w0	;7
+	dw .w7	;7
 	dw .w0	;8
 	dw .w0	;9
 	dw .w0	;a
@@ -65,16 +65,18 @@ Waveforms:			; wave channel waveforms
 	db $00,$11,$22,$33,$44,$55,$66,$77,$88,$99,$aa,$bb,$cc,$dd,$ee,$ff
 .w1			; thingamabob
 	db $00,$10,$11,$22,$20,$33,$30,$44,$40,$55,$50,$66,$60,$77,$70,$78
-.w2			; pokemon sine wave ver 1
+.w2			; pokemon smooth wave ver 1
 	db $02,$46,$8A,$CE,$FF,$FE,$ED,$DC,$CB,$A9,$87,$65,$44,$33,$22,$11
-.w3			; pokemon sine wave ver 2
+.w3			; pokemon smooth wave ver 2
 	db $02,$46,$8A,$CE,$EF,$FF,$FE,$EE,$DD,$CB,$A9,$87,$65,$43,$22,$11
-.w4			; pokemon sine wave ver 3
+.w4			; pokemon smooth wave ver 3
 	db $02,$46,$8A,$CD,$EF,$FE,$DE,$FF,$EE,$DC,$BA,$98,$76,$54,$32,$10
-.w5			; pokemon sine wave ver 4
+.w5			; pokemon smooth wave ver 4
 	db $13,$69,$BD,$EE,$EE,$FF,$FF,$ED,$DE,$FF,$FF,$EE,$EE,$DB,$96,$31
 .w6			; pokemon saw wave
 	db $01,$23,$45,$67,$8A,$CD,$EE,$F7,$7F,$EE,$DC,$A8,$76,$54,$32,$10
+.w7			; basic triangle wave
+	db $01,$23,$45,$67,$89,$AB,$CD,$EF,$FE,$DC,$BA,$98,$76,$54,$32,$10
 	
 UpdateCh1:				; where all the magic happens :P
 ; if delay != 0
@@ -90,31 +92,42 @@ UpdateCh1:				; where all the magic happens :P
 .readcommands
 ; parse command bytes
 	ld a, [hl]
-	cp callChannel
-	jp z, .pushChannelptr
-	cp endSub
-	jp z, .popChannelptr
-	cp toggleManual
-	jp z, .domanual
-	cp setLength
-	jp z, .setlength
-	cp transpose
-	jp z, .transpose
-	cp stereo
-	jr z, .dostereo
-	cp finepitch
-	jr z, .finepitch
-	cp loopSong
-	jp z, .loopsong
-	cp endSong
-	jr z, .disablesound
-	cp duty
-	jr z, .updateduty
-	cp setEnvelope
-	jr z, .setenvelope
+	cp byte_call
+	jp z, .pushChannelptr	; run callChannel command
+	
+	cp byte_endsub
+	jp z, .popChannelptr	; run endSub command
+	
+	cp byte_manual
+	jp z, .domanual		; run setManual command
+	
+	cp byte_length
+	jp z, .setlength	; run setLength commannd
+	
+	cp byte_transpose
+	jp z, .transpose	; run transpose command
+	
+	cp byte_stereo
+	jr z, .dostereo		; run stereo command
+	
+	cp byte_fpitch
+	jr z, .finepitch	; run finepitch command
+	
+	cp byte_loop
+	jp z, .loopsong		; run loopChannel command
+	
+	cp byte_end
+	jr z, .disablesound	; run endChannel command
+	
+	cp byte_duty
+	jr z, .updateduty	; run duty command
+	
+	cp byte_env
+	jr z, .setenvelope	; run setEnvelope command
+	
 ; notes $00 - $48
 	cp $49
-	jr c, .playnote
+	jr c, .playnote		; play a note
 	jr .end
 .cont
 ; instead decrement the delay
@@ -178,12 +191,13 @@ UpdateCh1:				; where all the magic happens :P
 	ld a, [hl]
 	ld [seCh1CurNote], a		; used for debug
 	and a
-	jr z, .notranspose		; if rest note
+	jp z, .rest			; if rest note
 	ld b, a
+	ld a, [seCh1CurEnvelope]	; reinstate envelope
+					; if not
+	ld [rNR12], a
 	ld a, [seCh1Transpose]		; transpose
 	add b
-.notranspose
-; get note
 	push hl
 	ld hl, NotesCommonPitches
 	ld c, a
@@ -269,6 +283,17 @@ UpdateCh1:				; where all the magic happens :P
 	ld a, [seCh1SavedPointer+1]
 	ld [seCh1CurPointer+1], a
 	jp UpdateCh1		; start back from the top
+.rest
+	xor a
+	ld [rNR12], a
+	ld a, [seCh1NoteLength]		; check if note length defined
+	and a
+	jp nz, .setautolength
+	inc hl
+	ld a, [hl]
+	ld [seCh1Delay], a
+	inc hl
+	jp .end
 	
 	
 	
@@ -285,27 +310,27 @@ UpdateCh2:
 	ld h, a
 .readcommands
 	ld a, [hl]
-	cp callChannel
+	cp byte_call
 	jp z, .pushChannelptr
-	cp endSub
+	cp byte_endsub
 	jp z, .popChannelptr
-	cp toggleManual
+	cp byte_manual
 	jp z, .domanual
-	cp setLength
+	cp byte_length
 	jp z, .setlength
-	cp transpose
+	cp byte_transpose
 	jp z, .transpose
-	cp stereo
+	cp byte_stereo
 	jr z, .dostereo
-	cp finepitch
+	cp byte_fpitch
 	jr z, .finepitch
-	cp loopSong
+	cp byte_loop
 	jp z, .loopsong
-	cp endSong
+	cp byte_end
 	jr z, .disablesound
-	cp duty
+	cp byte_duty
 	jr z, .updateduty
-	cp setEnvelope
+	cp byte_env
 	jr z, .setenvelope
 	cp $49
 	jr c, .playnote
@@ -360,11 +385,12 @@ UpdateCh2:
 	ld a, [hl]
 	ld [seCh2CurNote], a
 	and a
-	jr z, .notranspose
+	jp z, .rest
 	ld b, a
+	ld a, [seCh2CurEnvelope]	; reinstate envelope
+	ld [rNR22], a
 	ld a, [seCh2Transpose]		; transpose
 	add b
-.notranspose
 	push hl
 	ld hl, NotesCommonPitches
 	ld c, a
@@ -439,6 +465,17 @@ UpdateCh2:
 	ld a, [seCh2SavedPointer+1]
 	ld [seCh2CurPointer+1], a
 	jp UpdateCh2
+.rest
+	xor a
+	ld [rNR22], a
+	ld a, [seCh2NoteLength]		; check if note length defined
+	and a
+	jp nz, .setautolength
+	inc hl
+	ld a, [hl]
+	ld [seCh2Delay], a
+	inc hl
+	jp .end
 
 	
 	
@@ -453,25 +490,25 @@ UpdateCh3:
 	ld h, a
 .readcommands
 	ld a, [hl]
-	cp callChannel
+	cp byte_call
 	jp z, .pushChannelptr
-	cp endSub
+	cp byte_endsub
 	jp z, .popChannelptr
-	cp toggleManual
+	cp byte_manual
 	jp z, .domanual
-	cp setLength
+	cp byte_length
 	jp z, .setlength
-	cp transpose
+	cp byte_transpose
 	jp z, .transpose
-	cp stereo
+	cp byte_stereo
 	jr z, .dostereo
-	cp finepitch
+	cp byte_fpitch
 	jr z, .finepitch
-	cp loopSong
+	cp byte_loop
 	jp z, .loopsong
-	cp endSong
+	cp byte_end
 	jr z, .disablesound
-	cp wave
+	cp byte_wave
 	jr z, .updatewave
 	; command $4A is unused
 	cp $49
@@ -535,7 +572,8 @@ UpdateCh3:
 	ld [rNR30], a
 	pop hl
 	ld a, [hl]
-	and %00110000
+	rla
+	and %11110000
 	ld [rNR32], a
 	ld [seCh3CurEnvelope], a
 	inc hl
@@ -544,11 +582,12 @@ UpdateCh3:
 	ld a, [hl]
 	ld [seCh3CurNote], a
 	and a
-	jr z, .notranspose
+	jp z, .rest			; insert rest instead
 	ld b, a
+	ld a, [seCh3CurEnvelope]	; reinstate envelope
+	ld [rNR32], a
 	ld a, [seCh3Transpose]		; transpose
 	add b
-.notranspose
 	push hl
 	ld hl, NotesCommonPitches
 	ld c, a
@@ -623,6 +662,17 @@ UpdateCh3:
 	ld a, [seCh3SavedPointer+1]
 	ld [seCh3CurPointer+1], a
 	jp UpdateCh3
+.rest
+	xor a
+	ld [rNR32], a
+	ld a, [seCh3NoteLength]		; check if note length defined
+	and a
+	jp nz, .setautolength
+	inc hl
+	ld a, [hl]
+	ld [seCh3Delay], a
+	inc hl
+	jp .end
 	
 	
 	
@@ -637,27 +687,27 @@ UpdateCh4:
 	ld h, a
 .readcommands
 	ld a, [hl]
-	cp reptnote
+	cp byte_rept
 	jp z, .rept
-	cp callChannel
+	cp byte_call
 	jp z, .pushChannelptr
-	cp endSub
+	cp byte_endsub
 	jp z, .popChannelptr
-	cp toggleManual
+	cp byte_manual
 	jp z, .domanual
-	cp setLength
+	cp byte_length
 	jp z, .setlength
-	cp stereo
+	cp byte_stereo
 	jr z, .dostereo
-	cp loopSong
+	cp byte_loop
 	jp z, .loopsong
-	cp endSong
+	cp byte_end
 	jr z, .disablesound
-	cp noisetype
+	cp byte_noise
 	jr z, .setnoisetype
-	cp setEnvelope
+	cp byte_env
 	jr z, .setenvelope
-	cp rest
+	cp byte_rest
 	jr z, .rest
 	jr .end
 .cont

@@ -1,5 +1,6 @@
-; RAM variables used by Zoom's sound engine
-; DEDOTATED WAM.
+; Sound engine RAM variables
+
+SECTION "Sound", WRAM0
 seIsPlaying::		ds 1	; "is playing" flag
 seNumChannels::		ds 1	; number of channels to update
 

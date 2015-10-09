@@ -6,7 +6,7 @@ INCLUDE	"sound_engine/wram.asm"
 SECTION "GBS Header", ROM0[$0]
 	db "GBS"	; identifier
 	db 1		; GBS spec version
-	db 7		; number of songs
+	db 6		; number of songs
 	db 1		; first song
 	dw Start	; load address
 	dw Start	; init address
@@ -19,7 +19,7 @@ SECTION "GBS Title", ROM0[$10]
 	db "Sound Engine Test"	; title
 	
 SECTION "GBS Author", ROM0[$30]
-	db "ZoomTen Games"	; composer
+	db "ZoomTen"		; composer
 	
 SECTION "GBS Copyright", ROM0[$50]
 	db "2015 ZoomTen"	; copyright

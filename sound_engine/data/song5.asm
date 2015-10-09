@@ -206,6 +206,7 @@ Sound5_Ch3::
 	loopChannel .loop
 	
 .octE
+	wave 1, 8
 	noterow E_,1, 5,2
 	noterow E_,2, 5,2
 	noterow E_,1, 5,2
@@ -217,6 +218,7 @@ Sound5_Ch3::
 	endSub
 	
 .octF
+	wave 1, 8
 	noterow F_,1, 5,2
 	noterow F_,2, 5,2
 	noterow F_,1, 5,2
@@ -228,6 +230,7 @@ Sound5_Ch3::
 	endSub
 	
 .octD
+	wave 1, 8
 	noterow D_,1, 5,2
 	noterow D_,2, 5,2
 	noterow D_,1, 5,2
@@ -238,6 +241,7 @@ Sound5_Ch3::
 	noterow D_,2, 5,2
 	endSub
 .octCs
+	wave 1, 8
 	noterow C#,1, 5,2
 	noterow C#,2, 5,2
 	noterow C#,1, 5,2

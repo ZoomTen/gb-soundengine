@@ -1,15 +1,26 @@
 @echo off
+
+::SET GBS FILE NAME HERE::
+set gbs=gbstest
+
 echo Assembling GBS...
-rgbasm -o%1.obj %1.asm
+rgbasm -o%gbs%.obj %gbs%.asm
+
 echo Linking GBS..
-rgblink -o %1.gbs %1.obj
+rgblink -o %gbs%.gbs %gbs%.obj
+
 echo Done.
-del %1.obj
-dd if=%1.gbs of=data.bin skip=1136 bs=1
-dd if=%1.gbs of=header.bin bs=1 count=112
-copy /b header.bin+data.bin %1_out.gbs
+
+del %gbs%.obj
+
+dd if=%gbs%.gbs of=data.bin skip=1136 bs=1
+dd if=%gbs%.gbs of=header.bin bs=1 count=112
+copy /b header.bin+data.bin %gbs%_out.gbs
+
 del header.bin
 del data.bin
-del %1.gbs
-@echo on
+del %gbs%.gbs
+
 pause
+
+@echo on

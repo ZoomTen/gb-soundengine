@@ -3,7 +3,16 @@ note:	MACRO
 ; \2 = octave
 ; \3 = delay
 	db (\1 + $c * (\2))
-	db \3-1
+	db \3
+	ENDM
+	
+noterow:	MACRO
+; \1 = note
+; \2 = octave
+; \3 = speed
+; \4 = num of rows
+	db (\1 + $c * (\2))
+	db (\3 * \4) - 1
 	ENDM
 	
 notedata:	MACRO
@@ -33,7 +42,14 @@ finepitch:	MACRO
 noise:	MACRO	
 ; \1 = noise type
 ; \2 = delay (if manual mode is set)
-	db byte_noise, \1, \2-1
+	db byte_noise, \1, \2
+	ENDM
+	
+noiserow:	MACRO
+; \1 = noise type
+; \2 = speed
+; \3 = rows
+	db byte_noise, \1, (\2 * \3)-1
 	ENDM
 	
 noisedata:	MACRO	
@@ -77,7 +93,7 @@ setManual:	MACRO
 setLength:	MACRO
 ; sets auto note length
 ; \1 = length
-	db byte_length, \1 - 1
+	db byte_length, \1
 	ENDM
 	
 transpose:	MACRO
@@ -105,9 +121,30 @@ reptnote:	MACRO
 	
 rest:		MACRO
 ; only used on noise channel
-	db byte_rest, \1-1
+	db byte_rest, \1
+	ENDM
+	
+restrow:		MACRO
+; only used on noise channel
+	db byte_rest, (\1 * \2)-1
 	ENDM
 	
 restauto:	MACRO
 	db byte_rest
+	ENDM
+	
+setSpeed:	MACRO
+; sets a channel's speed
+	db byte_speed
+	db \1
+	ENDM
+	
+halfvol:		MACRO
+	db byte_halfvol
+	db \1
+	ENDM
+
+halfvol2:		MACRO
+; plays note but halved volume
+	db byte_halfvol
 	ENDM

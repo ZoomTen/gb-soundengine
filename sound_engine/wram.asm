@@ -1,6 +1,8 @@
 ; Sound engine RAM variables
 
 SECTION "Sound", WRAM0
+SoundRamStart::
+
 seIsPlaying::		ds 1	; "is playing" flag
 seNumChannels::		ds 1	; number of channels to update
 
@@ -35,10 +37,10 @@ seCh3CurNote::		ds 1
 seCh4CurNote::		ds 1
 
 ; Set note length (for auto mode)
-seCh1NoteLength::	ds 1
-seCh2NoteLength::	ds 1
-seCh3NoteLength::	ds 1
-seCh4NoteLength::	ds 1
+seCh1AutoLength::	ds 1
+seCh2AutoLength::	ds 1
+seCh3AutoLength::	ds 1
+seCh4AutoLength::	ds 1
 
 ; Note key transpose
 seCh1Transpose::	ds 1
@@ -51,3 +53,17 @@ seCh1CurEnvelope::	ds 1
 seCh2CurEnvelope::	ds 1
 seCh3CurEnvelope::	ds 1
 seCh4CurEnvelope::	ds 1
+
+; Length counter
+seCh1Length::		ds 1
+seCh2Length::		ds 1
+seCh3Length::		ds 1
+seCh4Length::		ds 1
+
+; Channel speed
+seCh1Speed::		ds 1
+seCh2Speed::		ds 1
+seCh3Speed::		ds 1
+seCh4Speed::		ds 1
+
+SoundRamEnd::

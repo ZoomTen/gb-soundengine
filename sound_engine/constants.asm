@@ -19,7 +19,8 @@ byte_call	EQU	$F5
 byte_endsub	EQU	$F4
 byte_rest	EQU	$F3
 byte_rept	EQU	$F2
-; byte_speed	EQU	$F1 will implement, maybe
+byte_speed	EQU	$F1
+byte_halfvol	EQU	$F0
 
 ; Base notes
 rs		EQU	$00

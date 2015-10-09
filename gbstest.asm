@@ -6,7 +6,7 @@ INCLUDE	"sound_engine/wram.asm"
 SECTION "GBS Header", ROM0[$0]
 	db "GBS"	; identifier
 	db 1		; GBS spec version
-	db 3		; number of songs
+	db 7		; number of songs
 	db 1		; first song
 	dw Start	; load address
 	dw Start	; init address
@@ -14,6 +14,7 @@ SECTION "GBS Header", ROM0[$0]
 	dw $DFFF	; stack address
 	db 0		; timer modulo; unused
 	db 0		; timer control; unused
+	
 SECTION "GBS Title", ROM0[$10]
 	db "Sound Engine Test"	; title
 	

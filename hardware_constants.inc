@@ -107,3 +107,10 @@ rUNKNOWN5   EQU $ff75 ; (8Fh) - Bit 4-6 (Read/Write)
 rUNKNOWN6   EQU $ff76 ; (00h) - Always 00h (Read Only)
 rUNKNOWN7   EQU $ff77 ; (00h) - Always 00h (Read Only)
 rIE         EQU $ffff ; Interrupt Enable (R/W)
+
+; VRAM CONSTANTS
+
+vChars0 EQU $8000
+vChars1 EQU $8800
+vBGMap0 EQU $9800
+vBGMap1 EQU $9c00
